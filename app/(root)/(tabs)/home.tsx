@@ -1,4 +1,5 @@
 import { useUser } from '@clerk/clerk-expo';
+import * as Location from 'expo-location';
 import {
   FlatList,
   View,
@@ -12,6 +13,8 @@ import RideCard from '@/components/RideCard';
 import { icons, images } from '@/constants';
 import GoogleTextInput from '@/components/GoogleTextInput';
 import Map from '@/components/Map';
+import { useLocationStore } from '@/store';
+import { useState, useEffect } from 'react';
 
 const recent_rides = [
   {
@@ -121,12 +124,41 @@ const recent_rides = [
 ];
 
 export default function Page() {
+  const { setUserLocation, setDestinationLocation } = useLocationStore();
+
   const { user } = useUser();
 
   const loading = true;
 
+  const [hasPermissions, sethasPermissions] = useState(false);
+
   const handleSignOut = () => {};
   const handleDestinationPress = () => {};
+
+  useEffect(() => {
+    const requestLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        sethasPermissions(false);
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync();
+
+      const address = await Location.reverseGeocodeAsync({
+        latitude: location.coords?.latitude!,
+        longitude: location.coords?.longitude!,
+      });
+
+      setUserLocation({
+        latitude: 33.85203,
+        longitude: -118.29118,
+        address: `${address[0].name}, ${address[0].region}`,
+      });
+    };
+
+    requestLocation();
+  }, []);
 
   return (
     <SafeAreaView className="bg-general-500">
