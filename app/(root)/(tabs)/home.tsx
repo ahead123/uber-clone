@@ -159,8 +159,8 @@ export default function Page() {
       });
 
       setUserLocation({
-        latitude: 33.85203,
-        longitude: -118.29118,
+        latitude: 33.8224,
+        longitude: -118.2906,
         address: `${address[0].name}, ${address[0].region}`,
       });
     };
