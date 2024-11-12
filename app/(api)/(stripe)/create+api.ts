@@ -37,7 +37,7 @@ export async function POST(request: Request, response: Response) {
         paymentIntent: paymentIntent,
         ephemeralKey: ephemeralKey,
         customer: customer.id,
-        //publishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY
+       
       }));
     
 }
