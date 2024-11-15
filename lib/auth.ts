@@ -1,4 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
+import * as Linking from 'expo-linking';
+import { fetchAPI } from './fetch';
 
 export const tokenCache = {
     async getToken(key: string) {
@@ -24,3 +26,47 @@ export const tokenCache = {
       }
     },
 };
+
+export const googleOAuth = async (startOAuthFlow: any) => {
+  try {
+    const { createdSessionId, signUp, setActive } = await startOAuthFlow({
+      redirectUrl: Linking.createURL('/(root)/(tabs)/home', { scheme: 'myapp' }),
+    })
+
+    if (createdSessionId) {
+      if(setActive){
+        await setActive({ session: createdSessionId });
+
+        if(signUp.createdUserId){
+          await fetchAPI(`/(api)/user`, {
+            method: 'POST',
+            body: JSON.stringify({
+              name: `${signUp.firstName} ${signUp.lastName}`,
+              email: signUp.emailAddress,
+              clerkId: signUp.createdUserId,              
+            }),
+          });
+        }
+        return {
+          success: true,
+          code: 'success',
+          message: 'You have successfully authenticated!'
+        }
+      }
+    } 
+
+    return {
+      success: false,
+      code: 'error',
+      message: 'You have failed to authenticate'
+    }
+    
+  } catch (error: any) {
+    console.log('OAuth error', error);
+    return {
+      success: false,
+      code: error?.code || 'error',
+      message: error?.errors[0]?.longMessage || 'You have failed to authenticate'
+    }
+  }
+}
